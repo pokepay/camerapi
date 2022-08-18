@@ -55,13 +55,6 @@ class MethodChannelCameraPi extends CameraPiPlatform {
   }
 
   @override
-  Future<void> setLooping(int textureId, bool looping) {
-    return _api.setLooping(LoopingMessage()
-      ..textureId = textureId
-      ..isLooping = looping);
-  }
-
-  @override
   Future<void> play(int textureId) {
     return _api.play(TextureMessage()..textureId = textureId);
   }
@@ -76,15 +69,6 @@ class MethodChannelCameraPi extends CameraPiPlatform {
     return _api.setVolume(VolumeMessage()
       ..textureId = textureId
       ..volume = volume);
-  }
-
-  @override
-  Future<void> setPlaybackSpeed(int textureId, double speed) {
-    assert(speed > 0);
-
-    return _api.setPlaybackSpeed(PlaybackSpeedMessage()
-      ..textureId = textureId
-      ..speed = speed);
   }
 
   @override

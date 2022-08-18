@@ -59,11 +59,6 @@ abstract class CameraPiPlatform extends PlatformInterface {
     throw UnimplementedError('videoEventsFor() has not been implemented.');
   }
 
-  /// Sets the looping attribute of the video.
-  Future<void> setLooping(int textureId, bool looping) {
-    throw UnimplementedError('setLooping() has not been implemented.');
-  }
-
   /// Starts the video playback.
   Future<void> play(int textureId) {
     throw UnimplementedError('play() has not been implemented.');
@@ -82,11 +77,6 @@ abstract class CameraPiPlatform extends PlatformInterface {
   /// Sets the video position to a [Duration] from the start.
   Future<void> seekTo(int textureId, Duration position) {
     throw UnimplementedError('seekTo() has not been implemented.');
-  }
-
-  /// Sets the playback speed to a [speed] value indicating the playback rate.
-  Future<void> setPlaybackSpeed(int textureId, double speed) {
-    throw UnimplementedError('setPlaybackSpeed() has not been implemented.');
   }
 
   /// Gets the video position as [Duration] from the start.
