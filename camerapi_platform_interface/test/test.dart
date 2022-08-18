@@ -13,10 +13,8 @@ abstract class TestHostVideoPlayerApi {
   void initialize();
   TextureMessage create(CreateMessage arg);
   void dispose(TextureMessage arg);
-  void setVolume(VolumeMessage arg);
   void play(TextureMessage arg);
   PositionMessage position(TextureMessage arg);
-  void seekTo(PositionMessage arg);
   void pause(TextureMessage arg);
   void setMixWithOthers(MixWithOthersMessage arg);
   static void setup(TestHostVideoPlayerApi? api) {
@@ -63,20 +61,6 @@ abstract class TestHostVideoPlayerApi {
     }
     {
       const BasicMessageChannel<Object?> channel =
-          BasicMessageChannel<Object?>('dev.flutter.pigeon.CameraPiApi.setVolume', StandardMessageCodec());
-      if (api == null) {
-        channel.setMockMessageHandler(null);
-      } else {
-        channel.setMockMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.CameraPiApi.setVolume was null. Expected VolumeMessage.');
-          final VolumeMessage input = VolumeMessage.decode(message!);
-          api.setVolume(input);
-          return <Object?, Object?>{};
-        });
-      }
-    }
-    {
-      const BasicMessageChannel<Object?> channel =
           BasicMessageChannel<Object?>('dev.flutter.pigeon.CameraPiApi.play', StandardMessageCodec());
       if (api == null) {
         channel.setMockMessageHandler(null);
@@ -100,20 +84,6 @@ abstract class TestHostVideoPlayerApi {
           final TextureMessage input = TextureMessage.decode(message!);
           final PositionMessage output = api.position(input);
           return <Object?, Object?>{'result': output.encode()};
-        });
-      }
-    }
-    {
-      const BasicMessageChannel<Object?> channel =
-          BasicMessageChannel<Object?>('dev.flutter.pigeon.CameraPiApi.seekTo', StandardMessageCodec());
-      if (api == null) {
-        channel.setMockMessageHandler(null);
-      } else {
-        channel.setMockMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.CameraPiApi.seekTo was null. Expected PositionMessage.');
-          final PositionMessage input = PositionMessage.decode(message!);
-          api.seekTo(input);
-          return <Object?, Object?>{};
         });
       }
     }

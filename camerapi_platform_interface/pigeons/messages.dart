@@ -47,10 +47,8 @@ abstract class CameraPiApi {
   void initialize();
   TextureMessage create(CreateMessage msg);
   void dispose(TextureMessage msg);
-  void setVolume(VolumeMessage msg);
   void play(TextureMessage msg);
   PositionMessage position(TextureMessage msg);
-  void seekTo(PositionMessage msg);
   void pause(TextureMessage msg);
   void setMixWithOthers(MixWithOthersMessage msg);
 }

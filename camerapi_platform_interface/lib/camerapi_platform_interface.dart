@@ -69,16 +69,6 @@ abstract class CameraPiPlatform extends PlatformInterface {
     throw UnimplementedError('pause() has not been implemented.');
   }
 
-  /// Sets the volume to a range between 0.0 and 1.0.
-  Future<void> setVolume(int textureId, double volume) {
-    throw UnimplementedError('setVolume() has not been implemented.');
-  }
-
-  /// Sets the video position to a [Duration] from the start.
-  Future<void> seekTo(int textureId, Duration position) {
-    throw UnimplementedError('seekTo() has not been implemented.');
-  }
-
   /// Gets the video position as [Duration] from the start.
   Future<Duration> getPosition(int textureId) {
     throw UnimplementedError('getPosition() has not been implemented.');

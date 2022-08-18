@@ -51,25 +51,6 @@ class CreateMessage {
   }
 }
 
-class VolumeMessage {
-  int? textureId;
-  double? volume;
-
-  Object encode() {
-    final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
-    pigeonMap['textureId'] = textureId;
-    pigeonMap['volume'] = volume;
-    return pigeonMap;
-  }
-
-  static VolumeMessage decode(Object message) {
-    final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
-    return VolumeMessage()
-      ..textureId = pigeonMap['textureId'] as int?
-      ..volume = pigeonMap['volume'] as double?;
-  }
-}
-
 class PositionMessage {
   int? textureId;
   int? position;
@@ -174,29 +155,6 @@ class CameraPiApi {
     }
   }
 
-  Future<void> setVolume(VolumeMessage arg) async {
-    final Object encoded = arg.encode();
-    const BasicMessageChannel<Object?> channel =
-        BasicMessageChannel<Object?>('dev.flutter.pigeon.CameraPiApi.setVolume', StandardMessageCodec());
-    final Map<Object?, Object?>? replyMap = await channel.send(encoded) as Map<Object?, Object?>?;
-    if (replyMap == null) {
-      throw PlatformException(
-        code: 'channel-error',
-        message: 'Unable to establish connection on channel.',
-        details: null,
-      );
-    } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = replyMap['error'] as Map<Object?, Object?>;
-      throw PlatformException(
-        code: error['code'] as String,
-        message: error['message'] as String?,
-        details: error['details'],
-      );
-    } else {
-      // noop
-    }
-  }
-
   Future<void> play(TextureMessage arg) async {
     final Object encoded = arg.encode();
     const BasicMessageChannel<Object?> channel =
@@ -240,29 +198,6 @@ class CameraPiApi {
       );
     } else {
       return PositionMessage.decode(replyMap['result']!);
-    }
-  }
-
-  Future<void> seekTo(PositionMessage arg) async {
-    final Object encoded = arg.encode();
-    const BasicMessageChannel<Object?> channel =
-        BasicMessageChannel<Object?>('dev.flutter.pigeon.CameraPiApi.seekTo', StandardMessageCodec());
-    final Map<Object?, Object?>? replyMap = await channel.send(encoded) as Map<Object?, Object?>?;
-    if (replyMap == null) {
-      throw PlatformException(
-        code: 'channel-error',
-        message: 'Unable to establish connection on channel.',
-        details: null,
-      );
-    } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = replyMap['error'] as Map<Object?, Object?>;
-      throw PlatformException(
-        code: error['code'] as String,
-        message: error['message'] as String?,
-        details: error['details'],
-      );
-    } else {
-      // noop
     }
   }
 

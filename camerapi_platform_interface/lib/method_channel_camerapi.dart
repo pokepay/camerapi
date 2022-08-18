@@ -130,7 +130,7 @@ class MethodChannelCameraPi extends CameraPiPlatform {
   }
 
   EventChannel _eventChannelFor(int textureId) {
-    return EventChannel('flutter.io/videoPlayer/videoEvents$textureId');
+    return EventChannel('flutter.io/cameraPi/videoEvents$textureId');
   }
 
   static const Map<VideoFormat, String> _videoFormatStringMap = <VideoFormat, String>{
