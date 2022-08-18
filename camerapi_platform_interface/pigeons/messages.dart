@@ -10,21 +10,6 @@ class TextureMessage {
   int textureId;
 }
 
-class LoopingMessage {
-  int textureId;
-  bool isLooping;
-}
-
-class VolumeMessage {
-  int textureId;
-  double volume;
-}
-
-class PlaybackSpeedMessage {
-  int textureId;
-  double speed;
-}
-
 class PositionMessage {
   int textureId;
   int position;
