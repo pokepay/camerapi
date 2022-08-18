@@ -246,9 +246,6 @@ enum VideoEventType {
   /// The video has been initialized.
   initialized,
 
-  /// The playback has ended.
-  completed,
-
   /// Updated information on the buffering state.
   bufferingUpdate,
 

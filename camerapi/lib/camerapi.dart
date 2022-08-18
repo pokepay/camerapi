@@ -40,7 +40,6 @@ class CameraPiValue {
     this.isInitialized = false,
     this.isPlaying = false,
     this.isBuffering = false,
-    this.volume = 1.0,
     this.rotationCorrection = 0,
     this.errorDescription,
   });
@@ -72,9 +71,6 @@ class CameraPiValue {
 
   /// True if the video is currently buffering.
   final bool isBuffering;
-
-  /// The current volume of the playback.
-  final double volume;
 
   /// A description of the error if present.
   ///
@@ -121,7 +117,6 @@ class CameraPiValue {
     bool? isInitialized,
     bool? isPlaying,
     bool? isBuffering,
-    double? volume,
     int? rotationCorrection,
     String? errorDescription = _defaultErrorDescription,
   }) {
@@ -133,7 +128,6 @@ class CameraPiValue {
       isInitialized: isInitialized ?? this.isInitialized,
       isPlaying: isPlaying ?? this.isPlaying,
       isBuffering: isBuffering ?? this.isBuffering,
-      volume: volume ?? this.volume,
       rotationCorrection: rotationCorrection ?? this.rotationCorrection,
       errorDescription: errorDescription != _defaultErrorDescription ? errorDescription : this.errorDescription,
     );
@@ -149,7 +143,6 @@ class CameraPiValue {
         'isInitialized: $isInitialized, '
         'isPlaying: $isPlaying, '
         'isBuffering: $isBuffering, '
-        'volume: $volume, '
         'errorDescription: $errorDescription)';
   }
 }
@@ -322,15 +315,7 @@ class CameraPiController extends ValueNotifier<CameraPiValue> {
             errorDescription: null,
           );
           initializingCompleter.complete(null);
-          _applyVolume();
           _applyPlayPause();
-          break;
-        case VideoEventType.completed:
-          // In this case we need to stop _timer, set isPlaying=false, and
-          // position=value.duration. Instead of setting the values directly,
-          // we use pause() and seekTo() to ensure the platform stops playing
-          // and seeks to the last frame of the video.
-          pause().then((void pauseResult) => seekTo(value.duration));
           break;
         case VideoEventType.bufferingUpdate:
           value = value.copyWith(buffered: event.buffered);
@@ -366,7 +351,6 @@ class CameraPiController extends ValueNotifier<CameraPiValue> {
         size: Size(1296, 972),
       );
       initializingCompleter.complete(null);
-      _applyVolume();
       _applyPlayPause();
     }
     return initializingCompleter.future;
@@ -401,11 +385,6 @@ class CameraPiController extends ValueNotifier<CameraPiValue> {
   /// finished.
   Future<void> play() async {
     print("Calling controller.play()");
-    if (!dataSource.startsWith('camera://')) {
-      if (value.position == value.duration) {
-        await seekTo(const Duration());
-      }
-    }
     value = value.copyWith(isPlaying: true);
     await _applyPlayPause();
   }
@@ -446,46 +425,12 @@ class CameraPiController extends ValueNotifier<CameraPiValue> {
     }
   }
 
-  Future<void> _applyVolume() async {
-    if (_isDisposedOrNotInitialized) {
-      return;
-    }
-    await _videoPlayerPlatform.setVolume(_textureId, value.volume);
-  }
-
   /// The position in the current video.
   Future<Duration?> get position async {
     if (_isDisposed) {
       return null;
     }
     return await _videoPlayerPlatform.getPosition(_textureId);
-  }
-
-  /// Sets the video's current timestamp to be at [moment]. The next
-  /// time the video is played it will resume from the given [moment].
-  ///
-  /// If [moment] is outside of the video's full range it will be automatically
-  /// and silently clamped.
-  Future<void> seekTo(Duration position) async {
-    if (_isDisposedOrNotInitialized) {
-      return;
-    }
-    if (position > value.duration) {
-      position = value.duration;
-    } else if (position < const Duration()) {
-      position = const Duration();
-    }
-    await _videoPlayerPlatform.seekTo(_textureId, position);
-    _updatePosition(position);
-  }
-
-  /// Sets the audio volume of [this].
-  ///
-  /// [volume] indicates a value between 0.0 (silent) and 1.0 (full volume) on a
-  /// linear scale.
-  Future<void> setVolume(double volume) async {
-    value = value.copyWith(volume: volume.clamp(0.0, 1.0));
-    await _applyVolume();
   }
 
   void _updatePosition(Duration position) {
@@ -674,14 +619,6 @@ class _CameraScrubberState extends State<_CameraScrubber> {
 
   @override
   Widget build(BuildContext context) {
-    void seekToRelativePosition(Offset globalPosition) {
-      final RenderBox box = context.findRenderObject()! as RenderBox;
-      final Offset tapPos = box.globalToLocal(globalPosition);
-      final double relative = tapPos.dx / box.size.width;
-      final Duration position = controller.value.duration * relative;
-      controller.seekTo(position);
-    }
-
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       child: widget.child,
@@ -694,22 +631,10 @@ class _CameraScrubberState extends State<_CameraScrubber> {
           controller.pause();
         }
       },
-      onHorizontalDragUpdate: (DragUpdateDetails details) {
-        if (!controller.value.isInitialized) {
-          return;
-        }
-        seekToRelativePosition(details.globalPosition);
-      },
       onHorizontalDragEnd: (DragEndDetails details) {
         if (_controllerWasPlaying && controller.value.position != controller.value.duration) {
           controller.play();
         }
-      },
-      onTapDown: (TapDownDetails details) {
-        if (!controller.value.isInitialized) {
-          return;
-        }
-        seekToRelativePosition(details.globalPosition);
       },
     );
   }

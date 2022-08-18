@@ -65,20 +65,6 @@ class MethodChannelCameraPi extends CameraPiPlatform {
   }
 
   @override
-  Future<void> setVolume(int textureId, double volume) {
-    return _api.setVolume(VolumeMessage()
-      ..textureId = textureId
-      ..volume = volume);
-  }
-
-  @override
-  Future<void> seekTo(int textureId, Duration position) {
-    return _api.seekTo(PositionMessage()
-      ..textureId = textureId
-      ..position = position.inMilliseconds);
-  }
-
-  @override
   Future<Duration> getPosition(int textureId) async {
     final PositionMessage response = await _api.position(TextureMessage()..textureId = textureId);
     return Duration(milliseconds: response.position!);
@@ -95,10 +81,6 @@ class MethodChannelCameraPi extends CameraPiPlatform {
             duration: Duration(milliseconds: map['duration']! as int),
             size: Size((map['width'] as num?)?.toDouble() ?? 0.0, (map['height'] as num?)?.toDouble() ?? 0.0),
             rotationCorrection: map['rotationCorrection'] as int? ?? 0,
-          );
-        case 'completed':
-          return VideoEvent(
-            eventType: VideoEventType.completed,
           );
         case 'bufferingUpdate':
           final List<dynamic> values = map['values']! as List<dynamic>;
@@ -130,7 +112,7 @@ class MethodChannelCameraPi extends CameraPiPlatform {
   }
 
   EventChannel _eventChannelFor(int textureId) {
-    return EventChannel('flutter.io/cameraPi/videoEvents$textureId');
+    return EventChannel('flutter.io/camerapi/videoEvents$textureId');
   }
 
   static const Map<VideoFormat, String> _videoFormatStringMap = <VideoFormat, String>{
