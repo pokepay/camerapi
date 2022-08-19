@@ -50,7 +50,7 @@ abstract class CameraPiPlatform extends PlatformInterface {
   }
 
   /// Creates an instance of a video player and returns its textureId.
-  Future<int?> create(DataSource dataSource) {
+  Future<int?> create() {
     throw UnimplementedError('create() has not been implemented.');
   }
 
@@ -59,19 +59,9 @@ abstract class CameraPiPlatform extends PlatformInterface {
     throw UnimplementedError('videoEventsFor() has not been implemented.');
   }
 
-  /// Starts the video playback.
-  Future<void> play(int textureId) {
-    throw UnimplementedError('play() has not been implemented.');
-  }
-
-  /// Stops the video playback.
-  Future<void> pause(int textureId) {
-    throw UnimplementedError('pause() has not been implemented.');
-  }
-
-  /// Gets the video position as [Duration] from the start.
-  Future<Duration> getPosition(int textureId) {
-    throw UnimplementedError('getPosition() has not been implemented.');
+  /// Returns a Stream of [VideoEventType]s.
+  Stream<BarcodeEvent> get barcodeEvents {
+    throw UnimplementedError('barcodeEvents() has not been implemented.');
   }
 
   /// Returns a widget displaying the video with a given textureID.
@@ -83,78 +73,6 @@ abstract class CameraPiPlatform extends PlatformInterface {
   Future<void> setMixWithOthers(bool mixWithOthers) {
     throw UnimplementedError('setMixWithOthers() has not been implemented.');
   }
-}
-
-/// Description of the data source used to create an instance of
-/// the video player.
-class DataSource {
-  /// Constructs an instance of [DataSource].
-  ///
-  /// The [sourceType] is always required.
-  ///
-  /// The [uri] argument takes the form of `'https://example.com/video.mp4'` or
-  /// `'file://${file.path}'`.
-  ///
-  /// The [formatHint] argument can be null.
-  ///
-  /// The [asset] argument takes the form of `'assets/video.mp4'`.
-  ///
-  /// The [package] argument must be non-null when the asset comes from a
-  /// package and null otherwise.
-  DataSource({
-    required this.sourceType,
-    this.uri,
-    this.formatHint,
-    this.asset,
-    this.package,
-    this.httpHeaders = const <String, String>{},
-  });
-
-  /// The way in which the video was originally loaded.
-  ///
-  /// This has nothing to do with the video's file type. It's just the place
-  /// from which the video is fetched from.
-  final DataSourceType sourceType;
-
-  /// The URI to the video file.
-  ///
-  /// This will be in different formats depending on the [DataSourceType] of
-  /// the original video.
-  final String? uri;
-
-  /// **Android only**. Will override the platform's generic file format
-  /// detection with whatever is set here.
-  final VideoFormat? formatHint;
-
-  /// HTTP headers used for the request to the [uri].
-  /// Only for [DataSourceType.network] videos.
-  /// Always empty for other video types.
-  Map<String, String> httpHeaders;
-
-  /// The name of the asset. Only set for [DataSourceType.asset] videos.
-  final String? asset;
-
-  /// The package that the asset was loaded from. Only set for
-  /// [DataSourceType.asset] videos.
-  final String? package;
-}
-
-/// The way in which the video was originally loaded.
-///
-/// This has nothing to do with the video's file type. It's just the place
-/// from which the video is fetched from.
-enum DataSourceType {
-  /// The video was included in the app's asset files.
-  asset,
-
-  /// The video was downloaded from the internet.
-  network,
-
-  /// The video was loaded off of the local filesystem.
-  file,
-
-  /// The video is available via contentUri. Android only.
-  contentUri,
 }
 
 /// The file format of the given video.
@@ -187,19 +105,12 @@ class VideoEvent {
   // ignore: prefer_const_constructors_in_immutables
   VideoEvent({
     required this.eventType,
-    this.duration,
     this.size,
     this.rotationCorrection,
-    this.buffered,
   });
 
   /// The type of the event.
   final VideoEventType eventType;
-
-  /// Duration of the video.
-  ///
-  /// Only used if [eventType] is [VideoEventType.initialized].
-  final Duration? duration;
 
   /// Size of the video.
   ///
@@ -211,31 +122,34 @@ class VideoEvent {
   /// Only used if [eventType] is [VideoEventType.initialized].
   final int? rotationCorrection;
 
-  /// Buffered parts of the video.
-  ///
-  /// Only used if [eventType] is [VideoEventType.bufferingUpdate].
-  final List<DurationRange>? buffered;
-
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         other is VideoEvent &&
             runtimeType == other.runtimeType &&
             eventType == other.eventType &&
-            duration == other.duration &&
             size == other.size &&
-            rotationCorrection == other.rotationCorrection &&
-            listEquals(buffered, other.buffered);
+            rotationCorrection == other.rotationCorrection;
   }
 
   @override
   int get hashCode => Object.hash(
         eventType,
-        duration,
         size,
         rotationCorrection,
-        buffered,
       );
+}
+
+class BarcodeEvent {
+  final String barcode;
+  final String barcodeType;
+  final int quality;
+
+  BarcodeEvent({required this.barcode, required this.barcodeType, required this.quality});
+  @override
+  String toString() {
+    return 'BarcodeEvent($barcodeType, $barcode)';
+  }
 }
 
 /// Type of the event.
@@ -246,78 +160,8 @@ enum VideoEventType {
   /// The video has been initialized.
   initialized,
 
-  /// Updated information on the buffering state.
-  bufferingUpdate,
-
-  /// The video started to buffer.
-  bufferingStart,
-
-  /// The video stopped to buffer.
-  bufferingEnd,
-
   /// An unknown event has been received.
   unknown,
-}
-
-/// Describes a discrete segment of time within a video using a [start] and
-/// [end] [Duration].
-@immutable
-class DurationRange {
-  /// Trusts that the given [start] and [end] are actually in order. They should
-  /// both be non-null.
-  // TODO(stuartmorgan): Temporarily suppress warnings about not using const
-  // in all of the other video player packages, fix this, and then update
-  // the other packages to use const.
-  // ignore: prefer_const_constructors_in_immutables
-  DurationRange(this.start, this.end);
-
-  /// The beginning of the segment described relative to the beginning of the
-  /// entire video. Should be shorter than or equal to [end].
-  ///
-  /// For example, if the entire video is 4 minutes long and the range is from
-  /// 1:00-2:00, this should be a `Duration` of one minute.
-  final Duration start;
-
-  /// The end of the segment described as a duration relative to the beginning of
-  /// the entire video. This is expected to be non-null and longer than or equal
-  /// to [start].
-  ///
-  /// For example, if the entire video is 4 minutes long and the range is from
-  /// 1:00-2:00, this should be a `Duration` of two minutes.
-  final Duration end;
-
-  /// Assumes that [duration] is the total length of the video that this
-  /// DurationRange is a segment form. It returns the percentage that [start] is
-  /// through the entire video.
-  ///
-  /// For example, assume that the entire video is 4 minutes long. If [start] has
-  /// a duration of one minute, this will return `0.25` since the DurationRange
-  /// starts 25% of the way through the video's total length.
-  double startFraction(Duration duration) {
-    return start.inMilliseconds / duration.inMilliseconds;
-  }
-
-  /// Assumes that [duration] is the total length of the video that this
-  /// DurationRange is a segment form. It returns the percentage that [start] is
-  /// through the entire video.
-  ///
-  /// For example, assume that the entire video is 4 minutes long. If [end] has a
-  /// duration of two minutes, this will return `0.5` since the DurationRange
-  /// ends 50% of the way through the video's total length.
-  double endFraction(Duration duration) {
-    return end.inMilliseconds / duration.inMilliseconds;
-  }
-
-  @override
-  String toString() => '${objectRuntimeType(this, 'DurationRange')}(start: $start, end: $end)';
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is DurationRange && runtimeType == other.runtimeType && start == other.start && end == other.end;
-
-  @override
-  int get hashCode => Object.hash(start, end);
 }
 
 /// [VideoPlayerOptions] can be optionally used to set additional player settings

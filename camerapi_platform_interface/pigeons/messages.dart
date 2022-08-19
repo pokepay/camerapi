@@ -10,19 +10,6 @@ class TextureMessage {
   int textureId;
 }
 
-class PositionMessage {
-  int textureId;
-  int position;
-}
-
-class CreateMessage {
-  String asset;
-  String uri;
-  String packageName;
-  String formatHint;
-  Map<String, String> httpHeaders;
-}
-
 class MixWithOthersMessage {
   bool mixWithOthers;
 }
@@ -30,11 +17,8 @@ class MixWithOthersMessage {
 @HostApi(dartHostTestHandler: 'TestHostVideoPlayerApi')
 abstract class CameraPiApi {
   void initialize();
-  TextureMessage create(CreateMessage msg);
+  TextureMessage create();
   void dispose(TextureMessage msg);
-  void play(TextureMessage msg);
-  PositionMessage position(TextureMessage msg);
-  void pause(TextureMessage msg);
   void setMixWithOthers(MixWithOthersMessage msg);
 }
 

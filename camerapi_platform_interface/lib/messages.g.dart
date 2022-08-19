@@ -23,53 +23,6 @@ class TextureMessage {
   }
 }
 
-class CreateMessage {
-  String? asset;
-  String? uri;
-  String? packageName;
-  String? formatHint;
-  Map<Object?, Object?>? httpHeaders;
-
-  Object encode() {
-    final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
-    pigeonMap['asset'] = asset;
-    pigeonMap['uri'] = uri;
-    pigeonMap['packageName'] = packageName;
-    pigeonMap['formatHint'] = formatHint;
-    pigeonMap['httpHeaders'] = httpHeaders;
-    return pigeonMap;
-  }
-
-  static CreateMessage decode(Object message) {
-    final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
-    return CreateMessage()
-      ..asset = pigeonMap['asset'] as String?
-      ..uri = pigeonMap['uri'] as String?
-      ..packageName = pigeonMap['packageName'] as String?
-      ..formatHint = pigeonMap['formatHint'] as String?
-      ..httpHeaders = pigeonMap['httpHeaders'] as Map<Object?, Object?>?;
-  }
-}
-
-class PositionMessage {
-  int? textureId;
-  int? position;
-
-  Object encode() {
-    final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
-    pigeonMap['textureId'] = textureId;
-    pigeonMap['position'] = position;
-    return pigeonMap;
-  }
-
-  static PositionMessage decode(Object message) {
-    final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
-    return PositionMessage()
-      ..textureId = pigeonMap['textureId'] as int?
-      ..position = pigeonMap['position'] as int?;
-  }
-}
-
 class MixWithOthersMessage {
   bool? mixWithOthers;
 
@@ -109,11 +62,10 @@ class CameraPiApi {
     }
   }
 
-  Future<TextureMessage> create(CreateMessage arg) async {
-    final Object encoded = arg.encode();
+  Future<TextureMessage> create() async {
     const BasicMessageChannel<Object?> channel =
         BasicMessageChannel<Object?>('dev.flutter.pigeon.CameraPiApi.create', StandardMessageCodec());
-    final Map<Object?, Object?>? replyMap = await channel.send(encoded) as Map<Object?, Object?>?;
+    final Map<Object?, Object?>? replyMap = await channel.send(null) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -136,75 +88,6 @@ class CameraPiApi {
     final Object encoded = arg.encode();
     const BasicMessageChannel<Object?> channel =
         BasicMessageChannel<Object?>('dev.flutter.pigeon.CameraPiApi.dispose', StandardMessageCodec());
-    final Map<Object?, Object?>? replyMap = await channel.send(encoded) as Map<Object?, Object?>?;
-    if (replyMap == null) {
-      throw PlatformException(
-        code: 'channel-error',
-        message: 'Unable to establish connection on channel.',
-        details: null,
-      );
-    } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = replyMap['error'] as Map<Object?, Object?>;
-      throw PlatformException(
-        code: error['code'] as String,
-        message: error['message'] as String?,
-        details: error['details'],
-      );
-    } else {
-      // noop
-    }
-  }
-
-  Future<void> play(TextureMessage arg) async {
-    final Object encoded = arg.encode();
-    const BasicMessageChannel<Object?> channel =
-        BasicMessageChannel<Object?>('dev.flutter.pigeon.CameraPiApi.play', StandardMessageCodec());
-    final Map<Object?, Object?>? replyMap = await channel.send(encoded) as Map<Object?, Object?>?;
-    if (replyMap == null) {
-      throw PlatformException(
-        code: 'channel-error',
-        message: 'Unable to establish connection on channel.',
-        details: null,
-      );
-    } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = replyMap['error'] as Map<Object?, Object?>;
-      throw PlatformException(
-        code: error['code'] as String,
-        message: error['message'] as String?,
-        details: error['details'],
-      );
-    } else {
-      // noop
-    }
-  }
-
-  Future<PositionMessage> position(TextureMessage arg) async {
-    final Object encoded = arg.encode();
-    const BasicMessageChannel<Object?> channel =
-        BasicMessageChannel<Object?>('dev.flutter.pigeon.CameraPiApi.position', StandardMessageCodec());
-    final Map<Object?, Object?>? replyMap = await channel.send(encoded) as Map<Object?, Object?>?;
-    if (replyMap == null) {
-      throw PlatformException(
-        code: 'channel-error',
-        message: 'Unable to establish connection on channel.',
-        details: null,
-      );
-    } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = replyMap['error'] as Map<Object?, Object?>;
-      throw PlatformException(
-        code: error['code'] as String,
-        message: error['message'] as String?,
-        details: error['details'],
-      );
-    } else {
-      return PositionMessage.decode(replyMap['result']!);
-    }
-  }
-
-  Future<void> pause(TextureMessage arg) async {
-    final Object encoded = arg.encode();
-    const BasicMessageChannel<Object?> channel =
-        BasicMessageChannel<Object?>('dev.flutter.pigeon.CameraPiApi.pause', StandardMessageCodec());
     final Map<Object?, Object?>? replyMap = await channel.send(encoded) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(

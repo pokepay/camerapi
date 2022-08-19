@@ -29,45 +29,9 @@ class MethodChannelCameraPi extends CameraPiPlatform {
   }
 
   @override
-  Future<int?> create(DataSource dataSource) async {
-    final CreateMessage message = CreateMessage();
-
-    switch (dataSource.sourceType) {
-      case DataSourceType.asset:
-        message.asset = dataSource.asset;
-        message.packageName = dataSource.package;
-        break;
-      case DataSourceType.network:
-        message.uri = dataSource.uri;
-        message.formatHint = _videoFormatStringMap[dataSource.formatHint];
-        message.httpHeaders = dataSource.httpHeaders;
-        break;
-      case DataSourceType.file:
-        message.uri = dataSource.uri;
-        break;
-      case DataSourceType.contentUri:
-        message.uri = dataSource.uri;
-        break;
-    }
-
-    final TextureMessage response = await _api.create(message);
+  Future<int?> create() async {
+    final TextureMessage response = await _api.create();
     return response.textureId;
-  }
-
-  @override
-  Future<void> play(int textureId) {
-    return _api.play(TextureMessage()..textureId = textureId);
-  }
-
-  @override
-  Future<void> pause(int textureId) {
-    return _api.pause(TextureMessage()..textureId = textureId);
-  }
-
-  @override
-  Future<Duration> getPosition(int textureId) async {
-    final PositionMessage response = await _api.position(TextureMessage()..textureId = textureId);
-    return Duration(milliseconds: response.position!);
   }
 
   @override
@@ -78,24 +42,24 @@ class MethodChannelCameraPi extends CameraPiPlatform {
         case 'initialized':
           return VideoEvent(
             eventType: VideoEventType.initialized,
-            duration: Duration(milliseconds: map['duration']! as int),
             size: Size((map['width'] as num?)?.toDouble() ?? 0.0, (map['height'] as num?)?.toDouble() ?? 0.0),
             rotationCorrection: map['rotationCorrection'] as int? ?? 0,
           );
-        case 'bufferingUpdate':
-          final List<dynamic> values = map['values']! as List<dynamic>;
-
-          return VideoEvent(
-            buffered: values.map<DurationRange>(_toDurationRange).toList(),
-            eventType: VideoEventType.bufferingUpdate,
-          );
-        case 'bufferingStart':
-          return VideoEvent(eventType: VideoEventType.bufferingStart);
-        case 'bufferingEnd':
-          return VideoEvent(eventType: VideoEventType.bufferingEnd);
         default:
           return VideoEvent(eventType: VideoEventType.unknown);
       }
+    });
+  }
+
+  @override
+  Stream<BarcodeEvent> get barcodeEvents {
+    return _barcodeEventChannel.receiveBroadcastStream().map((dynamic event) {
+      final map = event as Map<dynamic, dynamic>;
+      return BarcodeEvent(
+        barcode: map['barcode'] as String,
+        barcodeType: map['barcode_type'] as String,
+        quality: map['quality'] as int,
+      );
     });
   }
 
@@ -111,22 +75,9 @@ class MethodChannelCameraPi extends CameraPiPlatform {
     );
   }
 
+  EventChannel get _barcodeEventChannel => EventChannel('flutter.io/camerapi/barcodeEvents');
+
   EventChannel _eventChannelFor(int textureId) {
     return EventChannel('flutter.io/camerapi/videoEvents$textureId');
-  }
-
-  static const Map<VideoFormat, String> _videoFormatStringMap = <VideoFormat, String>{
-    VideoFormat.ss: 'ss',
-    VideoFormat.hls: 'hls',
-    VideoFormat.dash: 'dash',
-    VideoFormat.other: 'other',
-  };
-
-  DurationRange _toDurationRange(dynamic value) {
-    final List<dynamic> pair = value as List<dynamic>;
-    return DurationRange(
-      Duration(milliseconds: pair[0]! as int),
-      Duration(milliseconds: pair[1]! as int),
-    );
   }
 }

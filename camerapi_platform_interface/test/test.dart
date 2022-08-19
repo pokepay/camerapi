@@ -11,11 +11,8 @@ import '../lib/messages.g.dart';
 
 abstract class TestHostVideoPlayerApi {
   void initialize();
-  TextureMessage create(CreateMessage arg);
+  TextureMessage create();
   void dispose(TextureMessage arg);
-  void play(TextureMessage arg);
-  PositionMessage position(TextureMessage arg);
-  void pause(TextureMessage arg);
   void setMixWithOthers(MixWithOthersMessage arg);
   static void setup(TestHostVideoPlayerApi? api) {
     {
@@ -38,9 +35,8 @@ abstract class TestHostVideoPlayerApi {
         channel.setMockMessageHandler(null);
       } else {
         channel.setMockMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.CameraPiApi.create was null. Expected CreateMessage.');
-          final CreateMessage input = CreateMessage.decode(message!);
-          final TextureMessage output = api.create(input);
+          // ignore message
+          final TextureMessage output = api.create();
           return <Object?, Object?>{'result': output.encode()};
         });
       }
@@ -55,48 +51,6 @@ abstract class TestHostVideoPlayerApi {
           assert(message != null, 'Argument for dev.flutter.pigeon.CameraPiApi.dispose was null. Expected TextureMessage.');
           final TextureMessage input = TextureMessage.decode(message!);
           api.dispose(input);
-          return <Object?, Object?>{};
-        });
-      }
-    }
-    {
-      const BasicMessageChannel<Object?> channel =
-          BasicMessageChannel<Object?>('dev.flutter.pigeon.CameraPiApi.play', StandardMessageCodec());
-      if (api == null) {
-        channel.setMockMessageHandler(null);
-      } else {
-        channel.setMockMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.CameraPiApi.play was null. Expected TextureMessage.');
-          final TextureMessage input = TextureMessage.decode(message!);
-          api.play(input);
-          return <Object?, Object?>{};
-        });
-      }
-    }
-    {
-      const BasicMessageChannel<Object?> channel =
-          BasicMessageChannel<Object?>('dev.flutter.pigeon.CameraPiApi.position', StandardMessageCodec());
-      if (api == null) {
-        channel.setMockMessageHandler(null);
-      } else {
-        channel.setMockMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.CameraPiApi.position was null. Expected TextureMessage.');
-          final TextureMessage input = TextureMessage.decode(message!);
-          final PositionMessage output = api.position(input);
-          return <Object?, Object?>{'result': output.encode()};
-        });
-      }
-    }
-    {
-      const BasicMessageChannel<Object?> channel =
-          BasicMessageChannel<Object?>('dev.flutter.pigeon.CameraPiApi.pause', StandardMessageCodec());
-      if (api == null) {
-        channel.setMockMessageHandler(null);
-      } else {
-        channel.setMockMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.CameraPiApi.pause was null. Expected TextureMessage.');
-          final TextureMessage input = TextureMessage.decode(message!);
-          api.pause(input);
           return <Object?, Object?>{};
         });
       }
